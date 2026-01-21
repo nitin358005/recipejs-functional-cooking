@@ -198,10 +198,52 @@ const RecipeApp = (() => {
     const recipeContainer = document.querySelector('#recipe-container');
     const filterButtons = document.querySelectorAll('.filters button');
     const sortButtons = document.querySelectorAll('.sorters button');
+    const searchInput = document.querySelector('#search-input');
+    const recipeCounter = document.querySelector('#recipe-counter');
     
     let currentFilter = 'all';
     let currentSort = null;
+    let searchQuery = '';
+    let favorites = []; // Store favorite recipe IDs
     let expandedCards = {}; // Track which cards are expanded
+    let debounceTimer = null;
+    
+    // localStorage keys
+    const FAVORITES_STORAGE_KEY = 'recipeAppFavorites';
+
+    // localStorage functions
+    const saveFavorites = () => {
+        localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
+    };
+
+    const loadFavorites = () => {
+        const stored = localStorage.getItem(FAVORITES_STORAGE_KEY);
+        favorites = stored ? JSON.parse(stored) : [];
+    };
+
+    // Toggle favorite status
+    const toggleFavorite = (recipeId) => {
+        const index = favorites.indexOf(recipeId);
+        if (index > -1) {
+            favorites.splice(index, 1);
+        } else {
+            favorites.push(recipeId);
+        }
+        saveFavorites();
+        updateDisplay();
+    };
+
+    // Check if recipe is favorited
+    const isFavorited = (recipeId) => favorites.includes(recipeId);
+
+    // Debounced search function
+    const handleSearchInput = (query) => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            searchQuery = query.toLowerCase().trim();
+            updateDisplay();
+        }, 300); // 300ms debounce delay
+    };
 
     // RECURSIVE FUNCTION: Render nested steps
     // This function calls itself to handle multiple levels of nesting
@@ -235,10 +277,18 @@ const RecipeApp = (() => {
 
     // Pure function: create HTML for a single recipe card
     const createRecipeCard = (recipe) => {
+        const isFav = isFavorited(recipe.id);
+        const heartIcon = isFav ? '❤️' : '🤍';
+        
         return `
             <div class="recipe-card" data-id="${recipe.id}">
                 <div class="card-header">
-                    <h3>${recipe.title}</h3>
+                    <div class="card-title-row">
+                        <h3>${recipe.title}</h3>
+                        <button class="favorite-btn" data-recipe-id="${recipe.id}" title="${isFav ? 'Remove from favorites' : 'Add to favorites'}">
+                            ${heartIcon}
+                        </button>
+                    </div>
                     <div class="recipe-meta">
                         <span>⏱️ ${recipe.time} min</span>
                         <span class="difficulty ${recipe.difficulty}">${recipe.difficulty}</span>
@@ -278,16 +328,39 @@ const RecipeApp = (() => {
             .map(createRecipeCard)
             .join('');
         recipeContainer.innerHTML = recipeCardsHTML;
+        updateRecipeCounter(recipesToRender.length);
         attachEventListeners();
+    };
+
+    // Update recipe counter display
+    const updateRecipeCounter = (currentCount) => {
+        const totalRecipes = recipes.length;
+        recipeCounter.textContent = `Showing ${currentCount} of ${totalRecipes} recipes`;
     };
 
     // Pure function: filter recipes based on mode
     const applyFilter = (recipesList, filterMode) => {
+        if (filterMode === 'favorites') {
+            return recipesList.filter((recipe) => favorites.includes(recipe.id));
+        }
         if (filterMode === 'all') return recipesList;
         if (filterMode === 'quick') {
             return recipesList.filter((recipe) => recipe.time < 30);
         }
         return recipesList.filter((recipe) => recipe.difficulty === filterMode);
+    };
+
+    // Pure function: search recipes by title and ingredients
+    const applySearch = (recipesList, query) => {
+        if (!query) return recipesList;
+        
+        return recipesList.filter((recipe) => {
+            const titleMatch = recipe.title.toLowerCase().includes(query);
+            const ingredientMatch = recipe.ingredients.some(ingredient =>
+                ingredient.toLowerCase().includes(query)
+            );
+            return titleMatch || ingredientMatch;
+        });
     };
 
     // Pure function: sort recipes based on mode
@@ -305,7 +378,8 @@ const RecipeApp = (() => {
 
     // Central update function
     const updateDisplay = () => {
-        const filtered = applyFilter(recipes, currentFilter);
+        let filtered = applyFilter(recipes, currentFilter);
+        filtered = applySearch(filtered, searchQuery);
         const sorted = applySort(filtered, currentSort);
         renderRecipes(sorted);
     };
@@ -334,6 +408,14 @@ const RecipeApp = (() => {
     // Using event delegation for better performance
     const attachEventListeners = () => {
         recipeContainer.addEventListener('click', (e) => {
+            // Handle favorite button clicks
+            if (e.target.classList.contains('favorite-btn')) {
+                const recipeId = parseInt(e.target.getAttribute('data-recipe-id'));
+                toggleFavorite(recipeId);
+                return;
+            }
+            
+            // Handle toggle section buttons
             if (e.target.classList.contains('toggle-btn')) {
                 const recipeId = e.target.getAttribute('data-recipe-id');
                 const section = e.target.getAttribute('data-section');
@@ -372,11 +454,20 @@ const RecipeApp = (() => {
         });
     };
 
+    // Attach search input listener
+    const attachSearchListener = () => {
+        searchInput.addEventListener('input', (e) => {
+            handleSearchInput(e.target.value);
+        });
+    };
+
     // Public API - only init method is exposed
     return {
         init: () => {
+            loadFavorites(); // Load favorites from localStorage
             attachFilterListeners();
             attachSortListeners();
+            attachSearchListener();
             updateDisplay();
         }
     };

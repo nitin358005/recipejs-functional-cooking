@@ -66,7 +66,7 @@ main {
 .recipe-card h3 {
     color: #667eea;
     font-size: 1.5rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0;
 }
 
 .recipe-meta {
@@ -114,6 +114,32 @@ main {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
+/* Search Bar */
+.search-bar {
+    margin-bottom: 1.5rem;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: white;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-bar input::placeholder {
+    color: #999;
+}
+
 .filters,
 .sorters {
     display: flex;
@@ -123,7 +149,7 @@ main {
 }
 
 .sorters {
-    margin-bottom: 0;
+    margin-bottom: 1.5rem;
 }
 
 .filters button,
@@ -155,9 +181,23 @@ main {
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
+/* Recipe Counter */
+.recipe-counter {
+    text-align: right;
+    font-size: 0.95rem;
+    color: #666;
+    font-weight: 500;
+    padding-top: 0.5rem;
+}
+
 @media (max-width: 768px) {
     .controls {
         padding: 1.5rem;
+    }
+
+    .search-bar input {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
     }
 
     .filters,
@@ -169,6 +209,24 @@ main {
     .sorters button {
         padding: 0.6rem 1.2rem;
         font-size: 0.9rem;
+        flex: 1;
+        min-width: auto;
+    }
+
+    .recipe-counter {
+        text-align: left;
+        margin-top: 1rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .card-title-row {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .favorite-btn {
+        align-self: flex-start;
     }
 }
 
@@ -177,6 +235,43 @@ main {
     margin-bottom: 1rem;
     border-bottom: 2px solid #f0f0f0;
     padding-bottom: 1rem;
+}
+
+.card-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.card-title-row h3 {
+    flex: 1;
+    margin: 0;
+    color: #667eea;
+    font-size: 1.5rem;
+}
+
+/* Favorite Button */
+.favorite-btn {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    font-size: 1.75rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    transition: transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.favorite-btn:hover {
+    transform: scale(1.2);
+}
+
+.favorite-btn:active {
+    transform: scale(0.95);
 }
 
 .recipe-description {
