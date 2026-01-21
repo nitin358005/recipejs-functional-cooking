@@ -14,17 +14,29 @@
     
     <main>
         <section class="controls">
+            <div class="search-bar">
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    placeholder="🔍 Search recipes by title or ingredients..." 
+                    autocomplete="off"
+                >
+            </div>
+            
             <div class="filters">
                 <button data-filter="all">All Recipes</button>
                 <button data-filter="easy">Easy Recipes</button>
                 <button data-filter="medium">Medium Recipes</button>
                 <button data-filter="hard">Hard Recipes</button>
                 <button data-filter="quick">Quick Recipes (&lt; 30 min)</button>
+                <button data-filter="favorites">❤️ Favorites Only</button>
             </div>
             <div class="sorters">
                 <button data-sort="name">Sort: Name (A–Z)</button>
                 <button data-sort="time">Sort: Time (Fastest First)</button>
             </div>
+            
+            <div class="recipe-counter" id="recipe-counter"></div>
         </section>
 
         <div id="recipe-container">
